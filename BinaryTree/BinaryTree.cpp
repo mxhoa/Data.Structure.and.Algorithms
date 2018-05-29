@@ -10,11 +10,16 @@
 #include <iostream>
 #include "BinaryTree.h"
 
-/* ============================================== Type definition ====================================================== */
+/* ============================================== Declaration ====================================================== */
 template <class Entry>
 Binary_tree<Entry>::Binary_tree()
 {
     root = NULL;
+}
+
+template <class Entry>
+Binary_tree<Entry>::~Binary_tree()
+{
 }
 
 template <class Entry>
@@ -35,7 +40,7 @@ int Binary_tree<Entry>::size() const
 }
 
 template <class Entry>
-int Binray_tree<Entry>::recursive_size(Binary_node<Entry> *sub_tree)
+int Binary_tree<Entry>::recursive_size(Binary_node<Entry> *sub_tree)
 {
     if (sub_root == NULL)
         return 0;
@@ -81,7 +86,7 @@ void Binary_tree<Entry>::recursive_preorder(Binary_node<Entry> *sub_root, void (
 
 
 template <class Entry>
-void Binary_tree<Entry>::recursive_inorder(Binray_node<Entry> *sub_root, void (*visit)(Entry &))
+void Binary_tree<Entry>::recursive_inorder(Binary_node<Entry> *sub_root, void (*visit)(Entry &))
 {
     if (sub_root != NULL)
     {
@@ -111,7 +116,7 @@ void Binary_tree<Entry>::clear()
 }
 
 template <class Entry>
-void Binray_tree<Entry>::recursive_clear(Binary_node<Entry> *sub_root)
+void Binary_tree<Entry>::recursive_clear(Binary_node<Entry> *sub_root)
 {
     if (sub_root->left != NULL)
         recursive_clear(sub_root->left);
@@ -122,7 +127,7 @@ void Binray_tree<Entry>::recursive_clear(Binary_node<Entry> *sub_root)
 
 /* ============================================== HEIGHT() ============================================================= */
 template <class Entry>
-int Binray_tree<Entry>::height() const
+int Binary_tree<Entry>::height() const
 {
     return recursive_height(this->root);
 }
@@ -152,7 +157,7 @@ void Binary_tree<Entry>::insert(const Entry &e)
 }
 
 template <class Entry>
-void Binray_tree<Entry>::recursive_insert(Binary_node<Entry> *&sub_root, const Entry &e)
+void Binary_tree<Entry>::recursive_insert(Binary_node<Entry> *&sub_root, const Entry &e)
 {
     // if root is NULL
     if (sub_root == NULL)

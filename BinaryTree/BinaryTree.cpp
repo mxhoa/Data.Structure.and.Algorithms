@@ -18,6 +18,21 @@ Binary_tree<Entry>::Binary_tree()
 }
 
 template <class Entry>
+Binary_tree<Entry>::Binary_tree(const Binary_tree<Entry> &original)
+{
+    this->root = recursive_copy(original.root);
+}
+
+template <class Entry>
+Binary_tree<Entry>& Binary_tree<Entry>::operator =(const Binary_tree<Entry> &original)
+{
+    Binary_tree<Entry> bt(original);
+    return bt;
+}
+
+
+/* =========================== DESTRUCTOR ===============================================================================*/
+template <class Entry>
 Binary_tree<Entry>::~Binary_tree()
 {
 }
@@ -197,4 +212,20 @@ void Binary_tree<Entry>::recursive_insert(Binary_node<Entry> *&sub_root, const E
     }
     
 }
-/* ============================================== XXXXXXXXXX ====================================================== */
+/* ============================================== COPY ====================================================== */
+template <class Entry>
+Binary_node<Entry>* Binary_tree<Entry>::recursive_copy(Binary_node<Entry>* sub_root)
+{
+    if (sub_root == NULL)
+    {
+        return NULL;
+    }
+    else
+    {
+        Binary_node<Entry>* bn = new Binary_node<Entry>(sub_root->data);
+        bn->left = recursive_copy(sub_root->left);
+        bn->right = recursive_copy(sub_root->right);
+        return bn;
+    }
+    
+}

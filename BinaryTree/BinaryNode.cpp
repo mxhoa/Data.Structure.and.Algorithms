@@ -12,7 +12,8 @@
 template <class Entry>
 Binary_node<Entry>::Binary_node()
 {
-
+	this->left = NULL;
+    this->right = NULL;
 }
 
 template <class Entry>

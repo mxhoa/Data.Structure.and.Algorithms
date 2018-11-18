@@ -35,6 +35,7 @@ Binary_tree<Entry>& Binary_tree<Entry>::operator =(const Binary_tree<Entry> &ori
 template <class Entry>
 Binary_tree<Entry>::~Binary_tree()
 {
+    this->clear();
 }
 
 template <class Entry>
@@ -83,9 +84,27 @@ void Binary_tree<Entry>::inorder(void (*visit)(Entry &))
 }
 
 template <class Entry>
-void Binary_tree<Entry>::preorder(void (*visit)(Entry &))
+void Binary_tree<Entry>::postorder(void (*visit)(Entry &))
 {
     recursive_postorder(root, visit);
+}
+
+template <class Entry>
+void Binary_tree<Entry>::level_order(void (*visit)(Entry &))
+{
+    queue<Entry>* que = new queue<Entry>();
+    if (this->root != NULL)
+    {
+        for (int i = this->height(); i > 0; i--) 
+        {
+            recursive_level_order(que, this->root, i);
+        }
+        while (!que->empty()) 
+        {
+            visit(que->front());
+            que->pop();
+        }
+    }
 }
 
 template <class Entry>
@@ -119,6 +138,25 @@ void Binary_tree<Entry>::recursive_postorder(Binary_node<Entry> *sub_root, void 
         recursive_postorder(sub_root->left, visit);
         recursive_postorder(sub_root->right, visit);
         (*visit)(sub_root->data);
+    }
+}
+
+template <class Entry>
+void Binary_tree<Entry>::recursive_level_order(queue<Entry> *q, Binary_node<Entry> *sub_root, int level)
+{
+    if (sub_root == NULL)
+    {
+        return;
+    }
+    if (level == 1) 
+    {
+        q->push(sub_root->data);
+    } 
+    else 
+    {
+        level--;
+        recursive_level_order(q, sub_root->left, level);
+        recursive_level_order(q, sub_root->right, level);
     }
 }
 

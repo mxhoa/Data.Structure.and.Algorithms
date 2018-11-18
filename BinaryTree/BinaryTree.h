@@ -37,6 +37,7 @@
  *************************************************************************************************************************/
 #include "BinaryNode.h"
 #include "Utility\utility.h"
+#include <queue>
 
 #ifndef BINARY_TREE_H
 #define BINARY_TREE_H
@@ -82,6 +83,13 @@ public:
      *          -> the ROOT is visited third
      */
     void postorder(void (*visit)(Entry &));
+
+    /**
+     * @brief      The tree has been traversed in level order sequence
+     *
+     * @param[in]  visit  The visit
+     */
+    void level_order(void (*visit)(Entry &));
 
     /**
      * @brief   Get the numbers of nodes in the tree
@@ -130,7 +138,8 @@ public:
     void recursive_preorder(Binary_node<Entry> *sub_root, void (*visit)(Entry &));
     void recursive_inorder(Binary_node<Entry> *sub_root, void (*visit)(Entry &));
     void recursive_postorder(Binary_node<Entry> *sub_root, void (*visit)(Entry &));
-    
+    void recursive_level_order(queue<Entry>*, Binary_node<Entry> *sub_root, int level);
+
     /**
      * @brief   sub_root is NULL or pointernts to a subtree of the Binary_tree
      * @return  a pointer to a deep copy of tree pointed to by sub_root

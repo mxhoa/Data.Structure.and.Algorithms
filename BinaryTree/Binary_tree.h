@@ -36,7 +36,6 @@
  * CREATED ON : Sat May 19 2018
  *************************************************************************************************************************/
 #include "Binary_node.h"
-#include "utility.h"
 
 #ifndef BINARY_TREE_H
 #define BINARY_TREE_H
@@ -73,6 +72,9 @@ public:
      *          -> the RIGHT SUBTREE is visited third
      */
     void inorder(void (*visit)(Entry &));
+
+    vector<Entry>* inorder();
+    
 
     /**
      * @brief   The tree has been traversed in postfix order sequence
@@ -136,6 +138,7 @@ public:
     // Add auxiliary function prototypes here
     void recursive_preorder(Binary_node<Entry> *sub_root, void (*visit)(Entry &));
     void recursive_inorder(Binary_node<Entry> *sub_root, void (*visit)(Entry &));
+    void recursive_inorder(Binary_node<Entry> *sub_root, std::vector<Entry>*);
     void recursive_postorder(Binary_node<Entry> *sub_root, void (*visit)(Entry &));
     void recursive_level_order(std::queue<Entry> *, Binary_node<Entry> *sub_root, int level);
 

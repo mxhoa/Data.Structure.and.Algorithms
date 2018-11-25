@@ -8,7 +8,6 @@
 
 /* ============================================== Header includes ====================================================== */
 #include "Binary_node.h"
-#include <iostream>
 
 template <class Entry>
 Binary_node<Entry>::Binary_node()

@@ -8,6 +8,7 @@
  *************************************************************************************************************************/
 
 /* ============================================== Header includes ====================================================== */
+#include "utility.h"
 #ifndef BINARY_NODE_H
 #define BINARY_NODE_H
 
@@ -32,7 +33,7 @@ struct Binary_node
     // Constructor
     Binary_node();
     Binary_node(const Entry &x);
-    virtual ~Binary_node();
+    ~Binary_node();
 
 };
 #endif /* BINARY_NODE_H */

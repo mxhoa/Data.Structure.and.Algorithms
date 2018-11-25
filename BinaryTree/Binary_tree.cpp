@@ -7,14 +7,13 @@
  *************************************************************************************************************************/
 
 /* ============================================== Header includes ====================================================== */
-#include <iostream>
 #include "Binary_tree.h"
 
 /* ============================================== Declaration ====================================================== */
 template <class Entry>
 Binary_tree<Entry>::Binary_tree()
 {
-    root = NULL;
+    this->root = NULL;
 }
 
 template <class Entry>
@@ -35,13 +34,13 @@ Binary_tree<Entry>& Binary_tree<Entry>::operator =(const Binary_tree<Entry> &ori
 template <class Entry>
 Binary_tree<Entry>::~Binary_tree()
 {
-    this->clear();
+    //this->clear();
 }
 
 template <class Entry>
 bool Binary_tree<Entry>::empty() const
 {
-    return root == NULL;
+    return  (this->size() != 0);
 }
 
 /* ============================================== SIZE() =============================================================== */
@@ -108,7 +107,7 @@ void Binary_tree<Entry>::level_order(void (*visit)(Entry &))
 }
 
 template <class Entry>
-void Binary_tree<Entry>::recursive_preorder(Binary_node<Entry> *sub_root, void (*vist)(Entry &))
+void Binary_tree<Entry>::recursive_preorder(Binary_node<Entry> *sub_root, void (*visit)(Entry &))
 {
     if (sub_root != NULL)
     {
@@ -194,8 +193,8 @@ int Binary_tree<Entry>::recursive_height(Binary_node<Entry> * const &sub_root) c
     int right;
     int h;
 
-    hleft = recursive_height(sub_root->left) + 1;
-    hright = recursive_height(sub_root->right) + 1;
+    left = recursive_height(sub_root->left) + 1;
+    right = recursive_height(sub_root->right) + 1;
 
     h = (left > right) ? (left + 1) : (right + 1);
 

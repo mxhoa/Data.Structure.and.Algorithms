@@ -14,6 +14,9 @@
 
 #include "Binary_tree.h"
 
+#ifndef BINARY_SEARCH_TREE_H
+#define BINARY_SEARCH_TREE_H
+
 template <class Entry>
 class Binary_search_tree : public Binary_tree<Entry>
 {
@@ -41,7 +44,7 @@ public:
      * 
      * @use     recursive function search_and_destroy
      */
-    ERROR_CODE remove (const Entry &old_data);
+    ERROR_CODE remove(const Entry &target);
 
     /**
      * @brief   If there is an entry in the tree whose key matches that in target, 
@@ -58,7 +61,7 @@ public:
      */
     Entry Max_value() const;
 
-protected:
+  protected:
     /**
      * @brief   sub_root is either NULL or points to a subtree of the Seach_tree
      *          If sub_root is NULL, a code of not_present is returned. Otherwise,
@@ -101,10 +104,5 @@ private:
      * @return  returns the maximum valued node in the subtree
      */
     Entry recursive_max(Binary_node<Entry> *sub_root) const;
-
-    /**
-     * @brief   Destructor
-     * @return          
-     */
-    ~Binary_search_tree();
 };
+#endif

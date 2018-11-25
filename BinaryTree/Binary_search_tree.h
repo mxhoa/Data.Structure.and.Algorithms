@@ -12,17 +12,17 @@
  * CREATED ON : Mon May 28 2018
  *************************************************************************************************************************/
 
-#include "BinaryTree.h"
+#include "Binary_tree.h"
 
 template <class Entry>
-class BinarySearchTree : public Binary_tree<Entry>
+class Binary_search_tree : public Binary_tree<Entry>
 {
 public:
     /**
      * @brief   Constructor
      *          Empty tree has been created
      */
-    BinarySearchTree(/* args */);
+    Binary_search_tree(/* args */);
 
     /**
      * @brief   If an entry with a key matching that of new_data already belongs to the Search_tree,
@@ -106,5 +106,5 @@ private:
      * @brief   Destructor
      * @return          
      */
-    ~BinarySearchTree();
+    ~Binary_search_tree();
 };

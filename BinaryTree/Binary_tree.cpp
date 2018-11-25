@@ -8,7 +8,7 @@
 
 /* ============================================== Header includes ====================================================== */
 #include <iostream>
-#include "BinaryTree.h"
+#include "Binary_tree.h"
 
 /* ============================================== Declaration ====================================================== */
 template <class Entry>
@@ -39,7 +39,7 @@ Binary_tree<Entry>::~Binary_tree()
 }
 
 template <class Entry>
-bool Binary_tree<Entry>::empty()
+bool Binary_tree<Entry>::empty() const
 {
     return root == NULL;
 }
@@ -56,7 +56,7 @@ int Binary_tree<Entry>::size() const
 }
 
 template <class Entry>
-int Binary_tree<Entry>::recursive_size(Binary_node<Entry> *sub_tree)
+int Binary_tree<Entry>::recursive_size(Binary_node<Entry> *sub_root) const
 {
     if (sub_root == NULL)
         return 0;
@@ -142,7 +142,7 @@ void Binary_tree<Entry>::recursive_postorder(Binary_node<Entry> *sub_root, void 
 }
 
 template <class Entry>
-void Binary_tree<Entry>::recursive_level_order(queue<Entry> *q, Binary_node<Entry> *sub_root, int level)
+void Binary_tree<Entry>::recursive_level_order(std::queue<Entry> *q, Binary_node<Entry> *sub_root, int level)
 {
     if (sub_root == NULL)
     {

@@ -35,9 +35,8 @@
  *              which are referred to as the left child and the right child.
  * CREATED ON : Sat May 19 2018
  *************************************************************************************************************************/
-#include "BinaryNode.h"
-#include "Utility\utility.h"
-#include <queue>
+#include "Binary_node.h"
+#include "utility.h"
 
 #ifndef BINARY_TREE_H
 #define BINARY_TREE_H
@@ -138,7 +137,7 @@ public:
     void recursive_preorder(Binary_node<Entry> *sub_root, void (*visit)(Entry &));
     void recursive_inorder(Binary_node<Entry> *sub_root, void (*visit)(Entry &));
     void recursive_postorder(Binary_node<Entry> *sub_root, void (*visit)(Entry &));
-    void recursive_level_order(queue<Entry>*, Binary_node<Entry> *sub_root, int level);
+    void recursive_level_order(std::queue<Entry> *, Binary_node<Entry> *sub_root, int level);
 
     /**
      * @brief   sub_root is NULL or pointernts to a subtree of the Binary_tree
@@ -148,7 +147,7 @@ public:
 
     int recursive_size(Binary_node<Entry> *sub_root) const;
     int recursive_height(Binary_node<Entry> * const &sub_root) const;
-    int recursive_insert(Binary_node<Entry> *&sub_root, const Entry &);
+    void recursive_insert(Binary_node<Entry> *&sub_root, const Entry &);
     void recursive_clear(Binary_node<Entry> *sub_root);
 
     Binary_node<Entry> *root;

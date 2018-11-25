@@ -7,26 +7,26 @@
  *************************************************************************************************************************/
 
 /* ============================================== Header includes ====================================================== */
-#include "BinarySearchTree.h"
+#include "Binary_search_tree.h"
 
 
 
 /* ============================================== Declaration ========================================================== */
 template <class Entry>
-BinarySearchTree::BinarySearchTree()
+Binary_search_tree<Entry>::Binary_search_tree()
 {
-
+    std::cout << "Binary_search_tree - Constructor\n";
 }
 
 /* ============================================== Declaration ========================================================== */
 template <class Entry>
-ERROR_CODE BinarySearchTree<Entry>::remove(const Entry &old_data)
+ERROR_CODE Binary_search_tree<Entry>::remove(const Entry &old_data)
 {
     return search_and_destroy(root, target);
 }
 
 template <class Entry>
-ERROR_CODE BinarySearchTree<Entry>::remove_root(Binary_node<Entry> *&sub_root)
+ERROR_CODE Binary_search_tree<Entry>::remove_root(Binary_node<Entry> *&sub_root)
 {
     if (sub_root == NULL)
         return RES_NOT_PRESENT;
@@ -59,7 +59,7 @@ ERROR_CODE BinarySearchTree<Entry>::remove_root(Binary_node<Entry> *&sub_root)
 }
 
 template <class Entry>
-ERROR_CODE BinarySearchTree<Entry>::search_and_destroy(Binary_node<Entry>* &sub_root, const Entry &target)
+ERROR_CODE Binary_search_tree<Entry>::search_and_destroy(Binary_node<Entry>* &sub_root, const Entry &target)
 {
     if (sub_root == NULL || sub_root == target)
         return remove_root(sub_root);
@@ -70,7 +70,7 @@ ERROR_CODE BinarySearchTree<Entry>::search_and_destroy(Binary_node<Entry>* &sub_
 }
 /* ============================================== Declaration ========================================================== */
 template <class Entry>
-ERROR_CODE BinarySearchTree<Entry>::tree_search(Entry &target) const
+ERROR_CODE Binary_search_tree<Entry>::tree_search(Entry &target) const
 {
     if (!search_for_node(root, target))
         return RES_NOT_PRESENT;
@@ -79,7 +79,7 @@ ERROR_CODE BinarySearchTree<Entry>::tree_search(Entry &target) const
 }
 
 template <class Entry>
-Binary_node<Entry> *BinarySearchTree<Entry>::search_for_node(Binary_node<Entry> *sub_root, const Entry &target) const
+Binary_node<Entry> *Binary_search_tree<Entry>::search_for_node(Binary_node<Entry> *sub_root, const Entry &target) const
 {
     #define _RECURSION_
 #if defined _RECURSION_    
@@ -105,13 +105,13 @@ Binary_node<Entry> *BinarySearchTree<Entry>::search_for_node(Binary_node<Entry> 
 
 /* ============================================== Declaration ========================================================== */
 template <class Entry>
-ERROR_CODE BinarySearchTree<Entry>::insert(const Entry &new_data)
+ERROR_CODE Binary_search_tree<Entry>::insert(const Entry &new_data)
 {
     return search_and_insert(root, new_data);
 }
 
 template <class Entry>
-ERROR_CODE BinarySearchTree<Entry>::search_and_insert(Binary_node<Entry>* &sub_root, const Entry &new_data)
+ERROR_CODE Binary_search_tree<Entry>::search_and_insert(Binary_node<Entry>* &sub_root, const Entry &new_data)
 {
     if (sub_root == NULL)
     {
@@ -129,7 +129,7 @@ ERROR_CODE BinarySearchTree<Entry>::search_and_insert(Binary_node<Entry>* &sub_r
 
 /* ============================================== Declaration ========================================================== */
 template <class Entry>
-ERROR_CODE BinarySearchTree<Entry>::remove_root(Binary_node<Entry> *&sub_root) 
+ERROR_CODE Binary_search_tree<Entry>::remove_root(Binary_node<Entry> *&sub_root) 
 {
     if (sub_root == NULL) 
         return RES_NOT_PRESENT;
@@ -168,13 +168,13 @@ ERROR_CODE BinarySearchTree<Entry>::remove_root(Binary_node<Entry> *&sub_root)
 
 
 template<class Entry>
-ERROR_CODE BinarySearchTree<Entry>::remove(const Entry &target)
+ERROR_CODE Binary_search_tree<Entry>::remove(const Entry &target)
 {
     return search_and_destroy(this->root, target);
 }
 
-template<calss Entry>
-ERROR_CODE BinarySearchTree<Entry>::search_and_destroy(Binary_node<Entry>* &sub_root, const Entry &target)
+template<class Entry>
+ERROR_CODE Binary_search_tree<Entry>::search_and_destroy(Binary_node<Entry>* &sub_root, const Entry &target)
 {
     if (sub_root == NULL || sub_root->data == target)
         return remove_root(sub_root);
@@ -186,12 +186,12 @@ ERROR_CODE BinarySearchTree<Entry>::search_and_destroy(Binary_node<Entry>* &sub_
 
 
 template <class Entry>
-Entry BinarySearchTree<Entry>::Max_value() const {
+Entry Binary_search_tree<Entry>::Max_value() const {
     return recursive_max(this->root);
 }
 
 template <class Entry>
-Entry BinarySearchTree<Entry>::recursive_max(Binary_node<Entry>* sub_root) const {
+Entry Binary_search_tree<Entry>::recursive_max(Binary_node<Entry>* sub_root) const {
     if (sub_root->right == NULL)
     {
         return sub_root->data;

@@ -9,14 +9,9 @@
 
 /* ============================================== Header includes ====================================================== */
 #include "utility.h"
+
 #ifndef BINARY_NODE_H
 #define BINARY_NODE_H
-
-typedef enum {
-    left_higher,
-    equal_height,
-    right_hegher
-} Balance_factor;
 
 /**
  * @brief   Each node of a binary tree has both a left and a right subtree.
@@ -37,3 +32,31 @@ struct Binary_node
 
 };
 #endif /* BINARY_NODE_H */
+
+template <class Entry>
+Binary_node<Entry>::Binary_node()
+{
+}
+
+template <class Entry>
+Binary_node<Entry>::Binary_node(const Entry &x)
+{
+    this->data = x;
+    this->left = NULL;
+    this->right = NULL;
+}
+
+template <class Entry>
+Binary_node<Entry>::~Binary_node()
+{
+    this->data = NULL;
+    this->left = NULL;
+    this->right = NULL;
+}
+
+template <class Entry>
+std::ostream &operator<<(std::ostream &stream, const Binary_node<Entry> &x)
+{
+    stream << x.data << std::endl;
+    return stream;
+}

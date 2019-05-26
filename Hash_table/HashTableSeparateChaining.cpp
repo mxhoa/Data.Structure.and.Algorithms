@@ -9,7 +9,7 @@
 
 #define PRIME_NUMBER 103
 
-class HashTableSC
+class HashTableSeparateChaining
 {
 private:
     struct Node
@@ -20,25 +20,29 @@ private:
     };
 
     int tableSize;
-    std::vector<Node*> listArray;
+    std::vector<HashTableSeparateChaining::Node*> listArray;
 
     int ComputeHash(int key);  // division method
 
 public:
-    HashTableSC();
+    HashTableSeparateChaining();
     virtual void Add(int value);
     virtual bool Remove(int value);
     virtual bool Find(int value);
     virtual void Print();
 };
 
-HashTableSC::Node::Node(int v, Node *n)
+HashTableSeparateChaining::Node::Node(int v, Node *n)
 {
     value = v;
     next = n;
 }
 
-HashTableSC::HashTableSC()
+int HashTableSeparateChaining::ComputeHash(int key) {
+    return key % this->tableSize;
+}
+
+HashTableSeparateChaining::HashTableSeparateChaining()
 {
     tableSize = PRIME_NUMBER;
     listArray = std::vector<Node*>(tableSize);
@@ -47,13 +51,13 @@ HashTableSC::HashTableSC()
         listArray[i] = nullptr;
     }
 }
-void HashTableSC::Add(int value)
+void HashTableSeparateChaining::Add(int value)
 {
     int index = ComputeHash(value);
     listArray[index] = new Node(value, listArray[index]);
 }
 
-bool HashTableSC::Remove(int value)
+bool HashTableSeparateChaining::Remove(int value)
 {
     int index = ComputeHash(value);
     Node *nextNode, *head = listArray[index];
@@ -84,23 +88,26 @@ bool HashTableSC::Remove(int value)
     return false;
 }
 
-void HashTableSC::Print()
+void HashTableSeparateChaining::Print()
 {
+    std::cout << "\nValues Stored in Hash-Table using Separate-Chaining";
+    std::cout << "\n--TABLE-----------------";
     for (int i = 0; i < tableSize; i++)
     {
         Node *head = listArray[i];
         if (head)
-            std::cout << "Index :: " << i << "Value :: " << std::endl;
+            std::cout << "\nIndex[" << i << "] |HEAD|";
         
         while (head != nullptr)
         {
-            std::cout << head->value << std::endl;
+            std::cout << "-> " << head->value;
             head = head->next;
         }
     }
+    std::cout << "\n------------------------\n\n";
 }
 
-bool HashTableSC::Find(int value)
+bool HashTableSeparateChaining::Find(int value)
 {
     int index = ComputeHash(value);
     Node *head = listArray[index];
@@ -112,4 +119,26 @@ bool HashTableSC::Find(int value)
         head = head->next;
     }
     return false;
+}
+
+int main()
+{
+    HashTableSeparateChaining *ht = new HashTableSeparateChaining();
+    ht->Add(15);
+    ht->Add(89);
+    ht->Add(18);
+    ht->Add(18 + PRIME_NUMBER);
+    ht->Add(58);
+    ht->Add(88);
+    ht->Add(18 + 2*PRIME_NUMBER);
+    ht->Print();
+
+    std::cout << "Find(18) = " << ht->Find(18) << std::endl;
+
+    std::cout << "Remove 18 in HashTable" << std::endl;
+    ht->Remove(18);
+    ht->Print();
+    std::cout << "Find(18) = " << ht->Find(18) << std::endl;
+
+    return 0;
 }

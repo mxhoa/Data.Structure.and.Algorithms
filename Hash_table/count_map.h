@@ -14,7 +14,7 @@ template <typename T>
 
 class CountMap
 {
-  public:
+public:
     std::unordered_map<T, int> hm;
     virtual void add(T key)
     {

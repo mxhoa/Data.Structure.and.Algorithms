@@ -14,10 +14,7 @@
 #include <cassert>
 #include <iterator>
 #include <fstream>
-#include <chrono>
-#include <ctime>
-#include <ratio>
-//#include <ctime>
+
 //using namespace std;
 
 #define DEFAULT_MEMORY 1000000
@@ -142,11 +139,9 @@ public:
 
 	void sortAndWrite()
 	{
-		std::cout << "+++++SortThread[" << m_block_id << "] - SORTING-------- :: "
-				  << "\n";
 		auto start = std::chrono::system_clock::now();
 		std::stringstream fileName;
-		fileName << m_output_path << "." << m_block_id;
+		fileName << m_output_path << ".1." << m_block_id;
 		std::ofstream inFile(fileName.str(), std::ios::out);
 
 		if (_compareFunction != nullptr)
@@ -164,13 +159,7 @@ public:
 		inFile.close();
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
-
-		// char str_time[26];
-		// time_t result = time(NULL);
-		// ctime_s(str_time, sizeof str_time, &result);
-
-		std::cout << "+++++SortThread[" << m_block_id << "] - DONE :: " << elapsed_seconds.count() << " seconds "
-				  << "\n";
+		std::cout << "++++SortThread[" << m_block_id << "] - DONE :: " << elapsed_seconds.count() << " seconds\n";
 	}
 };
 
@@ -220,29 +209,27 @@ public:
 	void setComparision(bool (*compareFunction)(const std::string &a, const std::string &b));
 
 private:
-	// Driver the creation of sorted sub-files stored on disk
 	void blockSort();
-
-	// Drivers the merging of the sorted temp files.
-	// Final, sorted and merged output is written to "out"
-	void mergeUtil(unsigned int start, unsigned int end);
 	void merge();
+	// void merge1();
 	void merge2();
-	void writeToTempFile(const std::vector<std::string> &blockData);
+	void mergePart(int start, int end, int fid);
 	void openTempFiles();
-	void openTempFiles2();
-	void openTempFiles(int start, int end);
-	void closeTempFiles();
-	void closeTempFiles2();
+	void closeTempFiles1();
+	void writeToTempFile(const std::vector<std::string> &blockData);
 
 private:
 	std::string m_input_path;
 	std::string m_output_path;
 	bool (*_compareFunction)(const std::string &a, const std::string &b);
-	std::vector<std::string> _vTempFileNames;
+	// Phase 1
+	std::vector<std::string> _vTempFileNames1;
+	std::vector<std::ifstream *> _vTempFiles1;
+
+	// Phase 2
 	std::vector<std::string> _vTempFileNames2;
-	std::vector<std::ifstream *> _vTempFiles;
 	std::vector<std::ifstream *> _vTempFiles2;
+
 	unsigned int m_memory;
 	unsigned int m_file_counter;
 	bool _tempFileUsed;
@@ -287,6 +274,12 @@ long long int KwayMerge::getFileSize()
 void KwayMerge::Sort()
 {
 	blockSort();
+	std::thread t1(&KwayMerge::mergePart, this, 0, m_block_counter / 2, 0);
+	std::thread t2(&KwayMerge::mergePart, this, m_block_counter / 2 + 1, m_block_counter - 1, 1);
+	t1.join();
+	t2.join();
+	// merge();
+
 	merge2();
 }
 
@@ -313,50 +306,54 @@ void KwayMerge::blockSort()
 
 	_tempFileUsed = false;
 	std::vector<std::string> blockData;
-	long long int totalBytes = 0;
-	int tmpCounter = 0;
-	std::string iFile(m_input_path);
+	int blockCounter = 0;
+	long long int blockSize = 0;
 	long long int currentSize = 0;
+	std::string iFile(m_output_path);
 	bool (*compareFunction)(const std::string &a, const std::string &b) = _compareFunction;
 
 	std::string line;
 
-	//unsigned int m_num_threads = std::thread::hardware_concurrency();
-	unsigned int m_num_threads = 4;
+	unsigned int m_num_threads = std::thread::hardware_concurrency();
+	// unsigned int m_num_threads = 1;
+
 	std::cout << "Number of Threads = " << m_num_threads << "\n";
+
+	// Create thread pool for sorting each blocks
 	ThreadPool pool(m_num_threads);
 	std::vector<std::future<int>> results;
 
 	while (getline(*input, line, input->widen('\n')))
 	{
-		// getline(*input, line);
 		// *input >> line;
 		blockData.push_back(line);
-		totalBytes += (long long int)line.length() + 1;
+
+		blockSize += (long long int)line.length() + 1;
 		currentSize += (long long int)line.length() + 1;
 
-		if (currentSize == m_file_size + 1)
+		if (currentSize >= m_file_size)
 		{
-			std::cout << "Line = " << line << std::endl;
+			std::cout << "-------END LINE OF FILE--------" << std::endl;
 		}
 
 		// Sort the buffer and write to a temp file if we have filled up our quota
-		if (totalBytes > m_memory || currentSize >= m_file_size)
+		if (blockSize > m_memory || currentSize >= m_file_size)
 		{
 			results.emplace_back(
-				pool.enqueue([iFile, blockData, tmpCounter] {
-					std::cout << "_____CHUNK[" << tmpCounter << "] - BlockData.size() = " << blockData.size() << "\n";
-					SortThread *t = new SortThread(iFile, blockData, tmpCounter);
+				pool.enqueue([iFile, blockData, blockCounter] {
+					std::cout << "_____CHUNK[" << blockCounter << "] - BlockData.size() = " << blockData.size() << "\n";
+					SortThread *t = new SortThread(iFile, blockData, blockCounter);
 					SortThread::run(t);
-					// std::cout << "End :: CHUNK [" << tmpCounter << "]\n";
-					return tmpCounter;
+					return blockCounter;
 				}));
 
-			tmpCounter++;
+			blockCounter++;
+
 			// Clear the buffer for the next run
 			blockData.clear();
+
 			_tempFileUsed = true;
-			totalBytes = 0;
+			blockSize = 0;
 			m_block_counter++;
 		}
 	}
@@ -386,62 +383,82 @@ void KwayMerge::writeToTempFile(const std::vector<std::string> &blockData)
 	output->close();
 	delete output;
 
-	_vTempFileNames.push_back(tempFileName);
+	_vTempFileNames1.push_back(tempFileName);
 }
 
-void KwayMerge::mergeUtil(unsigned int start, unsigned int end)
+void KwayMerge::mergePart(int start, int end, int fid)
 {
-	std::cout << "\nKwayMerge::mergeUtil(" << start << ", " << end << ") \n";
+	std::cout << "mergePart(" << start << ", " << end << ", " << fid << ")\n";
 
-	if (!_tempFileUsed)
-		return;
+	std::vector<std::ifstream *> _vTempFileTable;
+	std::vector<std::string> _vTempFileNameTable;
 
+	// Open temp file output to write: "output.txt.2.xx"
 	std::stringstream tempFileSS;
-	tempFileSS << m_output_path << "." << m_file_counter;
-	std::string tempFileName = tempFileSS.str();
+	tempFileSS << m_output_path << ".2." << fid;
+	std::ofstream outFile(tempFileSS.str().c_str(), std::ios::out);
 
-	std::ofstream outFile;
-	outFile.open(tempFileName.c_str(), std::ios::out);
-
-	// Open the sorted temp files p for merging.
-	// Loads ifstream pointer into _vTempFiles
-	openTempFiles(start, end);
-
-	// Priority queue for the buffer
-	std::priority_queue<FileNode> buildHeap;
-
-	// extract the first line from each temp file
-	std::string line;
-
-	for (size_t i = start; i < end; ++i)
+	// Open file in streams from position start->end
+	for (size_t i = start; i <= end; i++)
 	{
-		*_vTempFiles[i] >> line;
-		buildHeap.push(FileNode(line, _vTempFiles[i], _compareFunction));
+		std::stringstream tmpFileOpen;
+		tmpFileOpen << m_output_path << ".1." << i;
+		std::ifstream *file = new std::ifstream(tmpFileOpen.str().c_str(), std::ios::in);
+
+		std::cout << "Open file " << tmpFileOpen.str() << std::endl;
+
+		if (file->good())
+		{
+			_vTempFileTable.push_back(file);
+			_vTempFileNameTable.push_back(tmpFileOpen.str());
+		}
+		else
+		{
+			std::cerr << "Unable to open temp file (" << tmpFileOpen.str()
+					  << "). Exiting.\n";
+			exit(1);
+		}
 	}
 
-	// keep working until the queue is empty
+	// Build Min Heap to merge
+	std::string line;
+	std::priority_queue<FileNode> buildHeap;
+
+	for (size_t i = 0; i < _vTempFileTable.size(); ++i)
+	{
+		*_vTempFileTable[i] >> line;
+		buildHeap.push(FileNode(line, _vTempFileTable[i], _compareFunction));
+	}
+
 	while (!buildHeap.empty())
 	{
 		FileNode lowest = buildHeap.top();
-
-		// Write the entry from the top of the queue
 		outFile << lowest.data << '\n';
-
-		// Remove this record from the queue
 		buildHeap.pop();
-
-		// Add the next line from the lowest stream to the queue
 		flush(outFile);
+
 		if (*(lowest.stream) >> line)
 		{
 			buildHeap.push(FileNode(line, lowest.stream, _compareFunction));
 		}
 	}
 
-	// Clean the temp files
-	closeTempFiles();
+	// Close file temp and remove file in streams
+	for (size_t i = 0; i < _vTempFileTable.size(); ++i)
+	{
+		_vTempFileTable[i]->close();
+		delete _vTempFileTable[i];
+		remove(_vTempFileNameTable[i].c_str());
+	}
+
+	// for (size_t i = 0; i < _vTempFileNameTable.size(); ++i)
+	// {
+	// 	remove(_vTempFileNameTable[i].c_str());
+	// }
+
+	// Close file output
 	outFile.close();
-	m_file_counter++;
+	std::cout << "mergePart(" << start << ", " << end << ", " << fid << ") --- DONE\n";
 }
 
 void KwayMerge::merge()
@@ -454,7 +471,7 @@ void KwayMerge::merge()
 	std::ofstream outFile;
 	outFile.open(m_output_path.c_str(), std::ios::out);
 	// Open the sorted temp files p for merging.
-	// Loads ifstream pointer into _vTempFiles
+	// Loads ifstream pointer into _vTempFiles1
 	openTempFiles();
 
 	// Priority queue for the buffer
@@ -463,10 +480,10 @@ void KwayMerge::merge()
 	// extract the first line from each temp file
 	std::string line;
 
-	for (size_t i = 0; i < _vTempFiles.size(); ++i)
+	for (size_t i = 0; i < _vTempFiles1.size(); ++i)
 	{
-		*_vTempFiles[i] >> line;
-		buildHeap.push(FileNode(line, _vTempFiles[i], _compareFunction));
+		*_vTempFiles1[i] >> line;
+		buildHeap.push(FileNode(line, _vTempFiles1[i], _compareFunction));
 	}
 
 	// keep working until the queue is empty
@@ -489,7 +506,7 @@ void KwayMerge::merge()
 	}
 
 	// Clean the temp files
-	closeTempFiles();
+	closeTempFiles1();
 	outFile.close();
 }
 
@@ -499,72 +516,77 @@ void KwayMerge::merge2()
 	// Skip this step if there are no temp files to merge.
 	if (_tempFileUsed == false)
 		return;
-	unsigned int s1 = 0;
-	unsigned int e1 = m_block_counter / 2 - 1;
-	unsigned int s2 = e1 + 1;
-	unsigned int e2 = m_block_counter - 1;
-
-	// ThreadPool pool2(2);
-	// std::vector<std::future<int>> results;
-
-	// for (int i = 0; i < 2; i++)
-	// {
-	// 	results.emplace_back(
-	// 	 	pool2.enqueue([i] {
-	// 	 		return i;
-	//  	}));
-	// }
-
-	std::thread th1(&KwayMerge::mergeUtil, this, s1, e1);
-	std::thread th2(&KwayMerge::mergeUtil, this, s2, e2);
-	th1.join();
-	th2.join();
 
 	std::ofstream outFile;
 	outFile.open(m_output_path.c_str(), std::ios::out);
 	// Open the sorted temp files p for merging.
-	// Loads ifstream pointer into _vTempFiles
-	openTempFiles2();
+	// Loads ifstream pointer into _vTempFiles1
 
-	// Priority queue for the buffer
-	std::priority_queue<FileNode> buildHeap;
+	std::vector<std::ifstream *> _vTempFileTable;
+	std::vector<std::string> _vTempFileNameTable;
 
-	// extract the first line from each temp file
-	std::string line;
-
-	for (size_t i = 0; i < _vTempFiles2.size(); ++i)
+	// Open file in streams from position start->end
+	for (size_t i = 0; i <= 1; i++)
 	{
-		*_vTempFiles2[i] >> line;
-		buildHeap.push(FileNode(line, _vTempFiles2[i], _compareFunction));
+		std::stringstream tmpFileOpen;
+		tmpFileOpen << m_output_path << ".2." << i;
+		std::ifstream *file = new std::ifstream(tmpFileOpen.str().c_str(), std::ios::in);
+
+		std::cout << "Open file " << tmpFileOpen.str() << std::endl;
+
+		if (file->good())
+		{
+			_vTempFileTable.push_back(file);
+			_vTempFileNameTable.push_back(tmpFileOpen.str());
+		}
+		else
+		{
+			std::cerr << "Unable to open temp file (" << tmpFileOpen.str()
+					  << "). Exiting.\n";
+			exit(1);
+		}
 	}
 
-	// keep working until the queue is empty
+	// Build Min Heap to merge
+	std::string line;
+	std::priority_queue<FileNode> buildHeap;
+
+	for (size_t i = 0; i < _vTempFileTable.size(); ++i)
+	{
+		*_vTempFileTable[i] >> line;
+		buildHeap.push(FileNode(line, _vTempFileTable[i], _compareFunction));
+	}
+
 	while (!buildHeap.empty())
 	{
 		FileNode lowest = buildHeap.top();
-
-		// Write the entry from the top of the queue
 		outFile << lowest.data << '\n';
-
-		// Remove this record from the queue
 		buildHeap.pop();
-
-		// Add the next line from the lowest stream to the queue
 		flush(outFile);
+
 		if (*(lowest.stream) >> line)
 		{
 			buildHeap.push(FileNode(line, lowest.stream, _compareFunction));
 		}
 	}
 
-	// Clean the temp files
-	closeTempFiles2();
+	// Close file temp and remove file in streams
+	for (size_t i = 0; i < _vTempFileTable.size(); ++i)
+	{
+		_vTempFileTable[i]->close();
+		delete _vTempFileTable[i];
+		remove(_vTempFileNameTable[i].c_str());
+	}
+
+	// Close file output
 	outFile.close();
+	std::cout << "merge2() --- DONE\n";
 }
 
 void KwayMerge::openTempFiles()
 {
 	std::cout << "openTempFiles() :: m_block_counter = " << m_block_counter << " \n";
+
 	for (unsigned int i = 0; i < m_block_counter; i++)
 	{
 		std::ifstream *file;
@@ -573,115 +595,56 @@ void KwayMerge::openTempFiles()
 
 		std::cout << "openTempFiles() - temp[" << i << "] \n";
 
-		_vTempFileNames.push_back(tempFileSS.str());
+		_vTempFileNames1.push_back(tempFileSS.str());
 
 		file = new std::ifstream(tempFileSS.str().c_str(), std::ios::in);
 
 		if (file->good() == true)
 		{
-			_vTempFiles.push_back(file);
+			_vTempFiles1.push_back(file);
 		}
 		else
 		{
-			std::cerr << "Unable to open tem file (" << _vTempFileNames[i]
+			std::cerr << "Unable to open tem file (" << _vTempFileNames1[i]
 					  << "). Exiting...\n";
 			exit(1);
 		}
 	}
 }
 
-void KwayMerge::openTempFiles2()
+void KwayMerge::closeTempFiles1()
 {
-	std::cout << "openTempFiles() :: m_block_counter = " << m_block_counter << " \n";
-	for (unsigned int i = 0; i < m_file_counter; i++)
-	{
-		std::ifstream *file;
-		std::stringstream tempFileSS;
-		tempFileSS << m_output_path << "." << i;
-
-		std::cout << "openTempFiles() - temp[" << i << "] \n";
-
-		_vTempFileNames2.push_back(tempFileSS.str());
-
-		file = new std::ifstream(tempFileSS.str().c_str(), std::ios::in);
-
-		if (file->good() == true)
-		{
-			_vTempFiles2.push_back(file);
-		}
-		else
-		{
-			std::cerr << "Unable to open tem file (" << _vTempFileNames2[i]
-					  << "). Exiting...\n";
-			exit(1);
-		}
-	}
-}
-
-void KwayMerge::openTempFiles(int start, int end)
-{
-	std::cout << "openTempFiles() :: m_block_counter = " << m_block_counter << " \n";
-	if (start < 0 || end > m_block_counter)
-		return;
-
-	for (unsigned int i = start; i < end; i++)
-	{
-		std::ifstream *file;
-		std::stringstream tempFileSS;
-		tempFileSS << m_input_path << "." << i;
-
-		std::cout << "openTempFiles() - temp[" << i << "] \n";
-
-		_vTempFileNames.push_back(tempFileSS.str());
-
-		file = new std::ifstream(tempFileSS.str().c_str(), std::ios::in);
-
-		if (file->good() == true)
-		{
-			_vTempFiles.push_back(file);
-		}
-		else
-		{
-			std::cerr << "Unable to open tem file (" << _vTempFileNames[i]
-					  << "). Exiting...\n";
-			exit(1);
-		}
-	}
-}
-
-void KwayMerge::closeTempFiles()
-{
-	std::cout << "closeTempFiles() :: " << _vTempFiles.size() << " files \n";
+	std::cout << "closeTempFiles1() :: " << _vTempFiles1.size() << " files \n";
 	// delete the pointers to the temp file.
-	for (size_t i = 0; i < _vTempFiles.size(); ++i)
+	for (size_t i = 0; i < _vTempFiles1.size(); ++i)
 	{
-		_vTempFiles[i]->close();
-		delete _vTempFiles[i];
+		_vTempFiles1[i]->close();
+		delete _vTempFiles1[i];
 	}
 
 	// delete the temp files from the file system.
-	for (size_t i = 0; i < _vTempFileNames.size(); ++i)
+	for (size_t i = 0; i < _vTempFileNames1.size(); ++i)
 	{
-		remove(_vTempFileNames[i].c_str());
+		remove(_vTempFileNames1[i].c_str());
 	}
 }
 
-void KwayMerge::closeTempFiles2()
-{
-	std::cout << "closeTempFiles2() :: " << _vTempFiles.size() << " files \n";
-	// delete the pointers to the temp file.
-	for (size_t i = 0; i < _vTempFiles2.size(); ++i)
-	{
-		_vTempFiles2[i]->close();
-		delete _vTempFiles2[i];
-	}
+// void KwayMerge::closeTempFile2()
+// {
+// 	std::cout << "closeTempFile2() :: " << _vTempFiles2.size() << " files\n";
+// 	// Delete the pointer to the temp file
+// 	for (size_t i = 0; i < _vTempFile2.size(); ++i)
+// 	{
+// 		_vTempFile2[i].close();
+// 		delete _vTempFile2[i];
+// 	}
 
-	// delete the temp files from the file system.
-	for (size_t i = 0; i < _vTempFileNames2.size(); ++i)
-	{
-		remove(_vTempFileNames2[i].c_str());
-	}
-}
+// 	// Delete the temp files ffrom the file system
+// 	for (size_t i = 0; i < _vTempFileNames2.size(); ++i)
+// 	{
+// 		remove(_vTempFileNames2[i].c_str());
+// 	}
+// }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 /*
@@ -752,14 +715,13 @@ int main(int argc, char *argv[])
 	std::string outFile = argv[2];
 	unsigned int memory = std::stoi(argv[3]);
 
-	long long int sizeFile = 1000; // MB
+	long long int sizeFile = 10000; // MB
 
-	//Generate_Random_Text_File(inFile, sizeFile * MB_TO_BYTE);
+	// Generate_Random_Text_File(inFile, sizeFile * MB_TO_BYTE);
 
-	//std::cout << "INPUT: " << inFile << "\n";
-	//std::cout << "OUPUT: " << outFile << "\n";
-	//std::cout << "MEMORY: " << argv[3] << "\n";
-
+	std::cout << "INPUT: " << inFile << "\n";
+	std::cout << "OUPUT: " << outFile << "\n";
+	std::cout << "MEMORY: " << argv[3] << "\n";
 	std::cout << "File is sorting....\n";
 
 	// ----- START TIME

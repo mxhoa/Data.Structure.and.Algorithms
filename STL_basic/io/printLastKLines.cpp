@@ -14,10 +14,17 @@ void printLastKLines(const std::string input, int k)
 	
 	std::ifstream inFile(input, std::ios::in);
 	std::vector<std::string> Lines(k);
-	
+
 	int size = 0;
 	std::string line;
 
+	if (inFile.peek() == std::ifstream::traits_type::eof())
+	{
+		std::cout << "File is empty!\nExiting...\n";
+		exit(1);
+	}
+
+	
 	while (std::getline(inFile, line))
 	{
 		Lines[size % k] = line;
@@ -44,6 +51,12 @@ void printLastKLines1(const std::string input, int k)
 	std::ifstream inFile(input, std::ios::in);
 	std::string line;
 
+	if (inFile.peek() == std::ifstream::traits_type::eof())
+	{
+		std::cout << "File is empty!\nExiting...\n";
+		exit(1);
+	}
+
 	while (std::getline(inFile, line))
 	{
 		q.push(line);
@@ -65,13 +78,14 @@ int main()
 {
 	std::string input("input.txt");
 	std::ofstream outFile(input, std::ios::out);
+
 	for (int i = 0; i < 100; i++)
 	{
 		outFile << "Number " <<  i << '\n';
 	}
 	outFile.close();
 
-	printLastKLines("input.txt", 6);
+	printLastKLines(input, 6);
 	// printLastKLines1("input.txt", 9);
 
 	std::remove(input.c_str());

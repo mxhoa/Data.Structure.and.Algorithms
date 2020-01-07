@@ -6,19 +6,16 @@ using namespace std;
 class Graph
 {
 private:
-    int V; // No. of vertices
+    int V;          // Number of vertices
+    list<int> *adj; // Adjacency lists
 
-    list<int> *adj; // pointer to an array containing adjacency lists.
-
+private:
     void DFSUtil(int v, bool visited[]);
 
 public:
     Graph(int V);
-
     void addEdge(int v, int w);
-
-    // DFS traversal of the vertices reachable from v
-    void DFS(int v);
+    void DFS(int v); // DFS traversal of the vertices reachable from v
 };
 
 Graph::Graph(int V)

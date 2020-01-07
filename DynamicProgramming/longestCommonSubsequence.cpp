@@ -24,24 +24,23 @@
 
 using namespace std;
 
-#if defined _OPTIMAL_SUBSTRUCTURE_
-/********************** 1. Optimal Substructure ****************************************/
-Let the input sequences be 
-    X[0..m-1] 
-    Y[0..n-1] of lengths m and n respectively. 
-    
-And let L(X[0..m-1], Y[0..n-1]) be the length of LCS of the two sequences X and Y. 
-Following is the recursive definition of L(X[0..m-1], Y[0..n-1]).
-
-If last characters of both sequences match 
-    (X[m-1] == Y[n-1])
-    => L(X[0..m-1], Y[0..n-1]) = 1 + L(X[0..m-2], Y[0..n-2])
-
-If last characters of both sequences do not match 
-    (X[m-1] != Y[n-1])
-    => L(X[0..m-1], Y[0..n-1]) = MAX ( L(X[0..m-2], Y[0..n-1]), L(X[0..m-1], Y[0..n-2])
-
-#endif
+/**************************** 1. Optimal Substructure ****************************************
+ * Let the input sequences be 
+ *     X[0..m-1] 
+ *     Y[0..n-1] of lengths m and n respectively. 
+ *     
+ * And let L(X[0..m-1], Y[0..n-1]) be the length of LCS of the two sequences X and Y. 
+ * Following is the recursive definition of L(X[0..m-1], Y[0..n-1]).
+ * 
+ * If last characters of both sequences match 
+ *     (X[m-1] == Y[n-1])
+ *     => L(X[0..m-1], Y[0..n-1]) = 1 + L(X[0..m-2], Y[0..n-2])
+ * 
+ * If last characters of both sequences do not match 
+ *     (X[m-1] != Y[n-1])
+ *     => L(X[0..m-1], Y[0..n-1]) = MAX ( L(X[0..m-2], Y[0..n-1]), L(X[0..m-1], Y[0..n-2])
+ * 
+ **********************************************************************************************/
 
 int longestCommonSubsequence(string X, string Y, int m, int n)
 {
@@ -54,17 +53,15 @@ int longestCommonSubsequence(string X, string Y, int m, int n)
                     longestCommonSubsequence(X, Y, m, n - 1));
 }
 
-#if defined _OVERLAPPING_SUBPROBLEM_
-/************************* 2. Overlapping Subproblems *********************************/
-
-                        lcs("AXYT", "AYZX")
-                        /                 \
-            lcs("AXY            /              \                /              \ 
-", "AYZX")            lcs("AXYT", "AYZ")
-lcs("AX", "AYZX")   lcs("AXY", "AYZ")   lcs("AXY", "AYZ") lcs("AXYT", "AY")
-
-#endif
-
+/************************* 2. Overlapping Subproblems *********************************
+ * 
+ *                         lcs("AXYT", "AYZX")
+ *                         /                 \
+ *             lcs("AXY            /              \                /              \ 
+ * ", "AYZX")            lcs("AXYT", "AYZ")
+ * lcs("AX", "AYZX")   lcs("AXY", "AYZ")   lcs("AXY", "AYZ") lcs("AXYT", "AY")
+ * 
+ **************************************************************************************/
 int longestCommonSubsequence_Opt(string X, string Y)
 {
     int m = X.length();

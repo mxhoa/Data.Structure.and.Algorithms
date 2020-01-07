@@ -1,7 +1,26 @@
 #include <iostream>
 #include <vector>
 
-using namespace std;
+/**********************************************************************************************
+ * @brief Subset Sum Problem
+ * @description: Given a set of non-negative integer, and a value sum, determine if there is 
+ *               a subset of the given set with sum equal to given sum
+ * 
+ * @example:    
+ *      Input:   nums[] = {3, 34, 4, 12, 5, 2}, sum = 9
+ *      Output:  True  
+ *               //There is a subset (4, 5) with sum 9.
+ * 
+ *
+ ********************************************************************************************/
+
+/**
+ * The subset sum problem can be divided into two subproblems:
+ *  - Sub1: Include the last element, recur for n = n - 1, sum = sum - nums[n - 1]
+ *  - Sub2: Exclude the last element, recur for n = n - 1
+ * If any of the above subproblems return TRUE, then return TRUE.
+ * 
+ */
 
 class RecursiveSolution
 {
@@ -84,8 +103,8 @@ int main()
     std::vector<int> nums = {3, 34, 4, 12, 5, 2};
     int sum = 9;
 
-    cout << "Result = " << (new RecursiveSolution())->isSubsetSum(nums, sum) << std::endl;
-    cout << "Result = " << (new DPSolution())->isSubsetSum(nums, sum) << std::endl;
+    std::cout << "Result = " << (new RecursiveSolution())->isSubsetSum(nums, sum) << std::endl;
+    std::cout << "Result = " << (new DPSolution())->isSubsetSum(nums, sum) << std::endl;
 
     return 0;
 }
